@@ -27,7 +27,20 @@ var currentLocation = {
  * Switch channels name in the right app bar
  * @param channelObject
  */
-function switchChannel(channelObject) {
+
+function showMessages(channelObject){
+    
+    $('#messages').empty();
+    $.each(channelObject.messages, function(index, value){
+        $('#messages').append(createMessageElement(new Message(value))); 
+        
+    });
+    
+
+}
+
+
+function switchChannel(channelObject, channelElement) {
     // Log the channel switch
     console.log("Tuning in to channel", channelObject);
 
@@ -48,12 +61,13 @@ function switchChannel(channelObject) {
     $('#channel-star i').removeClass('fa-star fa-star-o');
     $('#channel-star i').addClass(channelObject.starred ? 'fa-star' : 'fa-star-o');
 
-
     /* highlight the selected #channel.
        This is inefficient (jQuery has to search all channel list items), but we'll change it later on */
     $('#channels li').removeClass('selected');
-    $('#channels li:contains(' + channelObject.name + ')').addClass('selected');
-
+    $(channelElement).addClass('selected');
+     showMessages(channelObject);
+    
+    
     /* store selected channel in global variable */
     currentChannel = channelObject;
 }
@@ -167,7 +181,22 @@ function sendMessage() {
 function createMessageElement(messageObject) {
     // Calculating the expiresIn-time from the expiresOn-property
     var expiresIn = Math.round((messageObject.expiresOn - Date.now()) / 1000 / 60);
+/*
+    <div class="message own">
+        <h3>
+            <a href="http://w3w.co/shelf.jetted.purple" target="_blank">
+                <strong>shelf.jetted.purple</strong>
+            </a>
+            2.4.2018, 21:22:07
+            <em>15 min. left</em>
+        </h3>
+        <p>asdf</p>
+        <button class="accent">+5 min.</button>
+    </div>
+  */   
+    
 
+ 
     // Creating a message-element
     return '<div class="message'+
         //this dynamically adds #own to the #message, based on the
@@ -181,6 +210,8 @@ function createMessageElement(messageObject) {
         '<p>' + messageObject.text + '</p>' +
         '<button class="accent">+5 min.</button>' +
         '</div>';
+    
+        
 }
 
 /* #10 Three #compare functions to #sort channels */
@@ -223,8 +254,13 @@ function listChannels(criterion) {
 
     /* #10 append channels from #array with a #for loop */
     for (i = 0; i < channels.length; i++) {
-        $('#channels ul').append(createChannelElement(channels[i]));
+        $('#channels ul').append(createChannelElement(channels[i])) ;
+        switchChannel(currentChannel, createChannelElement(channels[i]));
     };
+    
+   
+    
+  
 }
 
 /**
@@ -305,11 +341,11 @@ function createChannelElement(channelObject) {
             <i class="fa fa-star-o"></i>
             <i class="fa fa-chevron-right"></i>
         </span>
-     </li>
+     </li>switchChannel( $(this), $(this) )
      */
 
     // create a channel
-    var channel = $('<li>').text(channelObject.name);
+    var channel = $('<li>').text(channelObject.name).click(function(){ switchChannel( channelObject , $(this) ) });
 
     // create and append channel meta
     var meta = $('<span>').addClass('channel-meta').appendTo(channel);
